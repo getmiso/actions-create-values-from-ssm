@@ -1,3 +1,5 @@
+const path = require("path");
+const fs = require("fs");
 const core = require("@actions/core");
 const AWS = require("aws-sdk");
 
@@ -26,17 +28,18 @@ const AWS = require("aws-sdk");
       NextToken = result.NextToken;
       Parameters.push(...result.Parameters);
     } while (NextToken);
-
+    let defaultValues = "";
+    let content = `env: \n`;
     Parameters.forEach(({ Name, Value, Type }) => {
-      const variable = prefix + Name.toUpperCase().replace(/^\//, "").replace(/\//g, "_");
-      // If we are decrypting SecureStrings, make sure the decrypted value isn't getting printed in the logs
-      // (see https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#masking-a-value-in-log)
-      if (WithDecryption && Type === "SecureString") {
-        core.setSecret(Value);
+      const variable = prefix + path.basename(Name);
+      if (variable === "HELM_DEFAULT_VALUES") {
+        defaultValues = Value;
+      } else {
+        content = content + `    ${variable}: ${Value}\n`;
       }
-      core.exportVariable(variable, Value);
-      core.info(`Exported variable ${variable} (${Value})`);
     });
+    content = content + defaultValues;
+    fs.writeFileSync("values.yaml", content);
   } catch (error) {
     core.setFailed(error.message);
   }
