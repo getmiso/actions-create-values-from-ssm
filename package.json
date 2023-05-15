@@ -20,14 +20,5 @@
     "@vercel/ncc": "^0.27.0",
     "prettier": "^2.2.1",
     "semantic-release": "^17.4.2"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "lint-staged && yarn run package && git add dist"
-    }
-  },
-  "lint-staged": {
-    "*.js": "prettier --write"
   }
 }
