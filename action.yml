@@ -1,0 +1,21 @@
+name: "Generate values.yaml file from aws ssm parameters"
+description: "Retrieves parameters from your AWS SSM Parameter Store and adds to values.yaml. file and exports values.yaml"
+inputs:
+  path:
+    description: "The SSM Parameter Store path"
+    required: true
+  decrypt:
+    description: "Whether to decrypt any secure values"
+    required: false
+    default: false
+  recursive:
+    description: "Whether to include all parameters within a hierarchy"
+    required: false
+    default: true
+  prefix:
+    description: "An optional prefix to add to the env var names"
+    required: false
+    default: ""
+runs:
+  using: "node12"
+  main: "dist/index.js"
