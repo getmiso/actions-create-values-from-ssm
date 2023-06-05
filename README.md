@@ -36,7 +36,7 @@ You can use it as follows:
 
 ```yaml
 - name: Get AWS SSM Parameter Store values into values.yaml
-    uses: getmiso/actions-create-values-from-ssm@v1
+    uses: getmiso/actions-create-values-from-ssm@v2
     with:
       path: path-to-aws-ssm
       deploymentName: deployment-name
