@@ -8,7 +8,6 @@ const { SSMClient, GetParametersByPathCommand } = require("@aws-sdk/client-ssm")
 // AWS.config.credentials = credentials;
 
 const getValuesTemplate = async (ValuesFilePath, DeploymentName) => {
-  console.log({ ValuesFilePath, DeploymentName });
   try {
     let buff = fs.readFileSync(ValuesFilePath);
     return { template: buff.toString(), fileFound: true };
@@ -46,7 +45,6 @@ const main = async () => {
     } while (NextToken);
 
     let { template, fileFound } = await getValuesTemplate(ValuesFilePath, DeploymentName);
-    console.log({ template, fileFound });
     if (!fileFound) template = template + `env: \n`;
 
     Parameters.forEach(({ Name, Value, Type }) => {
