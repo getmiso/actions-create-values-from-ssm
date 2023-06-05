@@ -43,13 +43,8 @@ module.exports = JSON.parse("{\"partitions\":[{\"id\":\"aws\",\"outputs\":{\"dns
 /***/ }),
 
 /***/ 32932:
-/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
-__nccwpck_require__.r(__webpack_exports__);
-/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => __WEBPACK_DEFAULT_EXPORT__
-/* harmony export */ });
 const path = __nccwpck_require__(85622);
 const fs = __nccwpck_require__(35747);
 const core = __nccwpck_require__(42186);
@@ -115,7 +110,7 @@ const main = async () => {
   }
 };
 
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (main);
+main()
 
 
 /***/ }),
