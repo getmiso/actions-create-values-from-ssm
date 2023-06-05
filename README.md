@@ -49,7 +49,7 @@ The actions can function in two ways.
 
 #### 1. With values template
 
-Values template can be a file that is given with `valuesFilePath`. Values template should be in the following format:
+Values template can be a file that is given with `valuesFilePath`. Values template can have custom variables that are replaced in this action. Variables that you want to replace with values from AWS Parameter Store can be given with `$PARAMETER_NAME`, like following:
 
 ```yaml
 fullnameOverride: $AWS_SSM_PARAMETER_NAME
