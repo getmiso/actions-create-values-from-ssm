@@ -59,8 +59,7 @@ service:
   targetPort: $AWS_SSM_PARAMETER_NAME
 ```
 
-This can be better explained with example:
-Let's say, `values.yaml` has the following content:
+This can be better explained with example. Let's say, `valuesFilePath` is `values.yaml` and the file has the following content:
 
 ```yaml
 fullnameOverride: $DEPLOYMENT_NAME
@@ -116,8 +115,7 @@ service:
   targetPort: 80
 ```
 
-Example:
-If `deploymentName` is provided as `microservice-2` and `path` `config/microservice-name/stage` has following parameters in AWS Parameter Store:
+Let's look at an example. If `deploymentName` is provided as `microservice-2` and `path` `config/microservice-name/stage` has following parameters in AWS Parameter Store:
 
 ```bash
 config/microservice-name/stage/ENV_ONE = env one txt
