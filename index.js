@@ -7,7 +7,19 @@ const AWS = require("aws-sdk");
 // const credentials = new AWS.SharedIniFileCredentials();
 // AWS.config.credentials = credentials;
 
-(async () => {
+const getValuesTemplate = async (ValuesFilePath, DeploymentName) => {
+  try {
+    let buff = fs.readFileSync(ValuesFilePath);
+    return { template: buff.toString(), fileFound: true };
+  } catch (err) {
+    return {
+      template: `fullnameOverride: ${DeploymentName}\nservice:\n  port: 80\n  name: ${DeploymentName}\n  targetPort: 80\n`,
+      fileFound: false,
+    };
+  }
+};
+
+const main = async () => {
   try {
     const ssm = new AWS.SSM();
     if (!ssm.config.credentials) {
@@ -17,6 +29,8 @@ const AWS = require("aws-sdk");
     }
     const prefix = core.getInput("prefix");
     const Path = core.getInput("path", { required: true });
+    const DeploymentName = core.getInput("deploymentName", { required: true });
+    const ValuesFilePath = core.getInput("valuesFilePath");
     const WithDecryption = core.getInput("decrypt") === "true";
     const Recursive = core.getInput("recursive") === "true";
 
@@ -28,19 +42,22 @@ const AWS = require("aws-sdk");
       NextToken = result.NextToken;
       Parameters.push(...result.Parameters);
     } while (NextToken);
-    let defaultValues = "";
-    let content = `env: \n`;
+
+    let { template, fileFound } = await getValuesTemplate(ValuesFilePath, DeploymentName);
+    if (!fileFound) template = template + `env: \n`;
+
     Parameters.forEach(({ Name, Value, Type }) => {
       const variable = prefix + path.basename(Name);
-      if (variable === "HELM_DEFAULT_VALUES") {
-        defaultValues = Value;
+      if (fileFound) {
+        template = template.replaceAll(`$${variable}`, Value);
       } else {
-        content = content + `    ${variable}: ${Value}\n`;
+        template = template + `    ${variable}: ${Value}\n`;
       }
     });
-    content = content + defaultValues;
-    fs.writeFileSync("values.yaml", content);
+    fs.writeFileSync("values.yaml", template);
   } catch (error) {
     core.setFailed(error.message);
   }
-})();
+};
+
+main();

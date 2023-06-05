@@ -4,6 +4,13 @@ inputs:
   path:
     description: "The SSM Parameter Store path"
     required: true
+  deploymentName:
+    description: "Deployment name that values.yaml is used"
+    required: true
+  valuesFilePath:
+    description: "values.yaml template file path"
+    required: false
+    default: "values.yaml"
   decrypt:
     description: "Whether to decrypt any secure values"
     required: false
