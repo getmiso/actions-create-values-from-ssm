@@ -1,14 +1,14 @@
 const path = require("path");
 const fs = require("fs");
 const core = require("@actions/core");
-const AWS = require("aws-sdk");
+const { SSMClient, GetParametersByPathCommand } = require("@aws-sdk/client-ssm");
 
 // // Uncomment me to use local credentials:
 // const credentials = new AWS.SharedIniFileCredentials();
 // AWS.config.credentials = credentials;
 
 const getValuesTemplate = async (ValuesFilePath, DeploymentName) => {
-  console.log({ValuesFilePath, DeploymentName})
+  console.log({ ValuesFilePath, DeploymentName });
   try {
     let buff = fs.readFileSync(ValuesFilePath);
     return { template: buff.toString(), fileFound: true };
@@ -22,7 +22,7 @@ const getValuesTemplate = async (ValuesFilePath, DeploymentName) => {
 
 const main = async () => {
   try {
-    const ssm = new AWS.SSM();
+    const ssm = new SSMClient();
     if (!ssm.config.credentials) {
       throw new Error(
         "No credentials. Try adding @aws-actions/configure-aws-credentials earlier in your job to set up AWS credentials.",
@@ -39,13 +39,14 @@ const main = async () => {
 
     let NextToken;
     do {
-      const result = await ssm.getParametersByPath({ Path, WithDecryption, Recursive, NextToken }).promise();
+      let command = new GetParametersByPathCommand({ Path, WithDecryption, Recursive, NextToken });
+      const result = await ssm.send(command);
       NextToken = result.NextToken;
       Parameters.push(...result.Parameters);
     } while (NextToken);
 
     let { template, fileFound } = await getValuesTemplate(ValuesFilePath, DeploymentName);
-    console.log({ template, fileFound } )
+    console.log({ template, fileFound });
     if (!fileFound) template = template + `env: \n`;
 
     Parameters.forEach(({ Name, Value, Type }) => {
@@ -62,4 +63,4 @@ const main = async () => {
   }
 };
 
-main();
+export default main;
