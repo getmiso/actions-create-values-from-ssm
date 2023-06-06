@@ -1,7 +1,0 @@
-fullnameOverride: $DEPLOYMENT_NAME
-service:
-  port: $SERVICE_PORT
-  name: $SERVICE_NAME
-  targetPort: $SERVICE_TARGET_PORT
-env:
-  ENV_ONE: $ENV_ONE
