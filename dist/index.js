@@ -107,10 +107,7 @@ const main = async () => {
         template = template + `    ${variable}: ${Value}\n`;
       }
     });
-    console.log({ template });
     const templateJSON = yaml.load(template);
-    console.log({ templateJSON });
-    console.log({ unusedParameters });
     unusedParameters.forEach(({ Name, Value }) => {
       const variable = prefix + path.basename(Name);
       if (templateJSON.env) templateJSON.env[variable] = Value;
@@ -120,7 +117,6 @@ const main = async () => {
       }
     });
     const updatedYamlTemplate = yaml.dump(templateJSON);
-    console.log({ updatedYamlTemplate });
     fs.writeFileSync("values.yaml", updatedYamlTemplate);
   } catch (error) {
     core.setFailed(error.message);

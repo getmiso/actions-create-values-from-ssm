@@ -1,7 +1,5 @@
 const path = require("path");
 const fs = require("fs");
-const core = require("@actions/core");
-const { SSMClient, GetParametersByPathCommand } = require("@aws-sdk/client-ssm");
 const yaml = require("js-yaml");
 
 // // Uncomment me to use local credentials:
@@ -22,28 +20,17 @@ const getValuesTemplate = async (ValuesFilePath, DeploymentName) => {
 
 const main = async () => {
   try {
-    const ssm = new SSMClient();
-    if (!ssm.config.credentials) {
-      throw new Error(
-        "No credentials. Try adding @aws-actions/configure-aws-credentials earlier in your job to set up AWS credentials.",
-      );
-    }
-    const prefix = core.getInput("prefix");
-    const Path = core.getInput("path", { required: true });
-    const DeploymentName = core.getInput("deploymentName", { required: true });
-    const ValuesFilePath = core.getInput("valuesFilePath");
-    const WithDecryption = core.getInput("decrypt") === "true";
-    const Recursive = core.getInput("recursive") === "true";
+    const prefix = "";
+    const DeploymentName = "miso-local";
+    const ValuesFilePath = "valuesd.yaml";
 
-    const Parameters = [];
-
-    let NextToken;
-    do {
-      let command = new GetParametersByPathCommand({ Path, WithDecryption, Recursive, NextToken });
-      const result = await ssm.send(command);
-      NextToken = result.NextToken;
-      Parameters.push(...result.Parameters);
-    } while (NextToken);
+    const Parameters = [
+      { Name: "/config/miso-local/staging/DEPLOYMENT_NAME", Value: "miso-local" },
+      { Name: "/config/miso-local/staging/SERVICE_NAME", Value: "miso-local" },
+      { Name: "/config/miso-local/staging/SERVICE_PORT", Value: 8080 },
+      { Name: "/config/miso-local/staging/SERVICE_TARGET_PORT", Value: 8080 },
+      { Name: "/config/miso-local/staging/ENV_ONE", Value: 'one txt' },
+    ];
 
     let { template, fileFound } = await getValuesTemplate(ValuesFilePath, DeploymentName);
     if (!fileFound && Parameters.length > 0) template = template + `env: \n`;
@@ -60,19 +47,24 @@ const main = async () => {
         template = template + `    ${variable}: ${Value}\n`;
       }
     });
+    console.log({ template });
     const templateJSON = yaml.load(template);
+    console.log({ templateJSON });
+    console.log({ unusedParameters });
     unusedParameters.forEach(({ Name, Value }) => {
       const variable = prefix + path.basename(Name);
       if (templateJSON.env) templateJSON.env[variable] = Value;
-      else{
-        templateJSON.env = {}
+      else {
+        templateJSON.env = {};
         templateJSON.env[variable] = Value;
       }
     });
     const updatedYamlTemplate = yaml.dump(templateJSON);
-    fs.writeFileSync("values.yaml", updatedYamlTemplate);
+    console.log({ templateJSON });
+    console.log({updatedYamlTemplate})
+    // fs.writeFileSync("values.yaml", updatedYamlTemplate);
   } catch (error) {
-    core.setFailed(error.message);
+    console.log(error);
   }
 };
 

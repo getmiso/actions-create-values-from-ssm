@@ -49,7 +49,7 @@ The actions can function in two ways.
 
 #### 1. With values template
 
-Values template can be a file that is given with `valuesFilePath`. Values template can have custom variables that are replaced in this action. Variables that you want to replace with values from AWS Parameter Store can be given with `$PARAMETER_NAME`, like following:
+Values template can be a file that is given with `valuesFilePath`. Values template can have custom variables that are replaced in this action. If any parameter is not found in the template then it is added as `env` variables to generated values.yaml. Variables that you want to replace with values from AWS Parameter Store can be given with `$PARAMETER_NAME`, like following:
 
 ```yaml
 fullnameOverride: $AWS_SSM_PARAMETER_NAME
@@ -69,8 +69,6 @@ fullnameOverride: $DEPLOYMENT_NAME
    targetPort: $SERVICE_TARGET_PORT
 env:
     ENV_ONE: $ENV_ONE
-    ENV_TWO: $ENV_TWO
-    ENV_THREE: $ENV_THREE
 ```
 
 And `path` `config/microservice-name/stage` has following parameters in AWS Parameter Store:
@@ -99,7 +97,7 @@ env:
   ENV_THREE: env three txt
 ```
 
-You can provide `values.yaml` file with as much parameters as you want as long as the variables exist in AWS Parameter Store.
+It is worth noting that, in the above example, `ENV_TWO` and `ENV_THREE` are automatically added to final values.yaml even though they did not exist in template. It is because as we mentioned above, any parameter that is not found in the template will be added as env variables to the final values.yaml. Template can have as much variables as you want as long as the values exist in AWS Parameter Store.
 
 #### 2. Without values template.
 
