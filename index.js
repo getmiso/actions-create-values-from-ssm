@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const core = require("@actions/core");
 const { SSMClient, GetParametersByPathCommand } = require("@aws-sdk/client-ssm");
+const yaml = require("js-yaml");
 
 // // Uncomment me to use local credentials:
 // const credentials = new AWS.SharedIniFileCredentials();
@@ -45,20 +46,38 @@ const main = async () => {
     } while (NextToken);
 
     let { template, fileFound } = await getValuesTemplate(ValuesFilePath, DeploymentName);
-    if (!fileFound) template = template + `env: \n`;
-
+    if (!fileFound && Parameters.length > 0) template = template + `env: \n`;
+    let unusedParameters = [];
     Parameters.forEach(({ Name, Value, Type }) => {
       const variable = prefix + path.basename(Name);
       if (fileFound) {
-        template = template.replaceAll(`$${variable}`, Value);
+        if (template.includes(`$${variable}`)) {
+          template = template.replaceAll(`$${variable}`, Value);
+        } else {
+          unusedParameters.push({ Name, Value });
+        }
       } else {
         template = template + `    ${variable}: ${Value}\n`;
       }
     });
-    fs.writeFileSync("values.yaml", template);
+    console.log({ template });
+    const templateJSON = yaml.load(template);
+    console.log({ templateJSON });
+    console.log({ unusedParameters });
+    unusedParameters.forEach(({ Name, Value }) => {
+      const variable = prefix + path.basename(Name);
+      if (templateJSON.env) templateJSON.env[variable] = Value;
+      else{
+        templateJSON.env = {}
+        templateJSON.env[variable] = Value;
+      }
+    });
+    const updatedYamlTemplate = yaml.dump(templateJSON);
+    console.log({ updatedYamlTemplate });
+    fs.writeFileSync("values.yaml", updatedYamlTemplate);
   } catch (error) {
     core.setFailed(error.message);
   }
 };
 
-main()
+main();
